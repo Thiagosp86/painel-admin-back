@@ -11,10 +11,13 @@ export class AuthService {
   ) {}
 
   async login(email: string, password: string) {
-    // 1. Buscar usuário no banco pelo email
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    // 1. Buscar usuário no banco pelo email, incluindo permissões
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: { permissions: true },
+    });
 
-    // 2. Validar se usuário existe e senha confere (aqui você pode usar bcrypt para hash)
+    // 2. Validar se usuário existe e senha confere
     if (!user) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
@@ -26,8 +29,7 @@ export class AuthService {
     }
 
     // 3. Criar o payload (dados que ficarão no token)
-    const payload = { sub: user.id, email: user.email, name: user.name };
-    // Note: O 'sub' é uma convenção para o ID do usuário no JWT
+    const payload = { sub: user.id, email: user.email, name: user.name, permissions: user.permissions.map(p => p.name) };
 
     // 4. Gerar o token JWT
     const token = this.jwtService.sign(payload);
@@ -39,6 +41,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
+        permissions: user.permissions.map(p => p.name),
       },
     };
   }

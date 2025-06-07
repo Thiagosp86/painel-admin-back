@@ -8,9 +8,16 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
-  password  String
-  createdAt DateTime @default(now())
+  id          Int          @id @default(autoincrement())
+  email       String       @unique
+  name        String
+  password    String
+  createdAt   DateTime     @default(now())
+  permissions Permission[] @relation("UserPermissions")
+}
+
+model Permission {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users User[] @relation("UserPermissions")
 }
